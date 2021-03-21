@@ -34,6 +34,7 @@ public class Account {
         this.IDname = IDname;
         this.priname = priname;
         this.qqnum = qqnum;
+
     }
 
     public Account theObj(){

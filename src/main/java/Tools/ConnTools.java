@@ -67,12 +67,34 @@ public class ConnTools {
                     return true;
                 }
             }
-            JOptionPane.showConfirmDialog(null,"您输入的账号不存在或密码错误！请重新输入");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
         return false;
     }
+
+    /**
+     * 判断该账号状态是否时已经登陆
+     * @param account
+     * @return
+     */
+    public static boolean isLogin(String account){
+        Connection conn = connectSQL();
+        try {
+            Statement stml = conn.createStatement();
+            String sql = "select *from account where account ="+account;
+            ResultSet rs = stml.executeQuery(sql);
+            while (rs.next()){
+                if(account.equals(rs.getString(1))&&rs.getInt(6)!=0){
+                    return true;
+                }
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return false;
+    }
+
 
     /**
      * 向数据库中添加新的用户元素
@@ -400,5 +422,51 @@ public class ConnTools {
         retPass.setLayeredPane(layP);
     }
 
+    /**
+     * 向数据库请求查询qq数据，检测qq账号是否已经被注册
+     * @param qqnum
+     * @return  返回一个布尔值
+     */
+    public static boolean checkQQIsExits(String qqnum){
+        Connection conn = connectSQL();
+        Statement stml = null;
+        try {
+            stml = conn.createStatement();
+            String sql = "select *from account where qqnum = "+qqnum;
+            ResultSet rs = stml.executeQuery(sql);
+            while (rs.next()){
+                if(qqnum.equals(rs.getString(5))){
+                    return true;
+                }
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * 创建账户，将账户数据写入mysql中
+     * @param account
+     * @param password
+     */
+    public static void createAccount(String account,String password,String qqnum){
+        Connection conn = connectSQL();
+        try {
+            Account acc = new Account(account,password,"qquser","helloword",qqnum);
+            String sql = "insert into account values(?,?,?,?,?,?)";
+            PreparedStatement prml = conn.prepareStatement(sql);
+            prml.setString(1,acc.getAccount());
+            prml.setString(2,acc.getPassword());
+            prml.setString(3,acc.getIDname());
+            prml.setString(4,acc.getPriname());
+            prml.setString(5,acc.getQqnum());
+            prml.setInt(6,0);
+            prml.execute();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
 
 }
