@@ -68,7 +68,7 @@ public class ClientObj extends Thread{
         while (true){
             if(isAlive){
                 try {
-                    int style = dint.readInt();//获取发送的数据类型
+                    int style = dint.read();//获取发送的数据类型
                     switch (style){
                         //接收的报文头为1，则接收信息为远程登陆阶段
                         case 1:{
@@ -92,8 +92,11 @@ public class ClientObj extends Thread{
                             String msg = readString();
                             if(mysever.getClient(sendDes)!=null){
                                 mysever.getClient(sendDes).sendMsg(sendAcc,msg);
-                            };
-
+                            }
+                        }
+                        case 5:{
+                            isAlive = false;
+                            mysever.removeClient(this);
                         }
                     }
                 } catch (IOException e) {

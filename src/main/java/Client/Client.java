@@ -120,20 +120,6 @@ public class Client {
 
     public void UI() {
 
-//		JFrame.setDefaultLookAndFeelDecorated(true);
-//		try {
-////			UIManager.setLookAndFeel("com.birosoft.liquid.LiquidLookAndFeel");
-//			String lookAndFeel ="com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
-//			UIManager.setLookAndFeel(lookAndFeel);
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (InstantiationException e) {
-//			e.printStackTrace();
-//		} catch (IllegalAccessException e) {
-//			e.printStackTrace();
-//		} catch (UnsupportedLookAndFeelException e) {
-//			e.printStackTrace();
-//		}
         JFrame jf = new JFrame();
         jf.setTitle("QQΩÁ√Ê");
         jf.setSize(350, 750);

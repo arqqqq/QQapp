@@ -100,8 +100,15 @@ public class connectSever extends Thread{
 
 
     /**
-     *
+     *发送关闭消息
      */
+    public void sendNoOnlineMsg(){
+        try {
+            dout.write(5);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 

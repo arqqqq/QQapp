@@ -114,6 +114,7 @@ public class Login {
             @Override
             public void mouseClicked(MouseEvent e) {
                 //关闭窗口
+                severs.sendNoOnlineMsg();
                 System.exit(0);
             }
             @Override
@@ -162,6 +163,12 @@ public class Login {
         sign_up.setBorderPainted(false);
         sign_up.addActionListener(e -> {});
         frame.add(sign_up);
+        sign_up.addActionListener(e -> {
+            //弹出一个新的窗口，有很多的界面
+            JFrame frames = new JFrame();
+            frames.setTitle("注册窗口");
+
+        });
 
         JButton forget = new JButton("找回密码");
         forget.setBounds(330, 160, 120, 30);
