@@ -33,6 +33,7 @@ public class CreatSever {
                     //等待客户端的连接
                     Socket so = sever.accept();
                     ClientObj cli = new ClientObj(so,this);
+                    cli.start();
                     cligroup.add(cli);
                 } catch (IOException e) {
                     e.printStackTrace();
