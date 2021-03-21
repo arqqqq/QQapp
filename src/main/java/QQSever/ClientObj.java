@@ -142,7 +142,7 @@ public class ClientObj extends Thread{
      */
     public void sendPassError(){
         try {
-            dout.writeInt(1);
+            dout.write(1);
             dout.writeBoolean(false);
             dout.writeInt(10);
         } catch (IOException e) {
@@ -155,7 +155,7 @@ public class ClientObj extends Thread{
      */
     public void sendLoginError(){
         try {
-            dout.writeInt(1);
+            dout.write(1);
             dout.writeBoolean(false);
             dout.writeInt(11);
         } catch (IOException e) {
@@ -183,11 +183,14 @@ public class ClientObj extends Thread{
             //判断qq是否已经注册
             if(ConnTools.checkQQIsExits(qqnum)){
                 //向客户机反馈qq号已经被注册的报文消息
+                dout.write(2);
+                dout.writeBoolean(true);
+                return;
             }else {
                 //通过pop3和stmp协议给qq邮箱发送一个信息
-
                 String vertcode = SendMsg.sendMessages(qqnum);
-                dout.writeInt(2);
+                dout.write(2);
+                dout.writeBoolean(false);
                 writeString(vertcode);
             }
             //进行信息接收
@@ -243,7 +246,7 @@ public class ClientObj extends Thread{
 
     public void sendMsg(String sendAcc,String msg){
         try {
-            dout.writeInt(4);
+            dout.write(4);
             writeString(sendAcc);
             writeString(msg);
         } catch (IOException e) {
