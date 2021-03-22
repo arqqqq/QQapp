@@ -24,6 +24,7 @@ public class Chat {
     public Chat(ConnectServer connect,String Destaccount,String AccountIn){
         this.connect=connect;
         this.AccountIn = AccountIn;
+        this.Destaccount = Destaccount;
     }
 
     public void Open() {
