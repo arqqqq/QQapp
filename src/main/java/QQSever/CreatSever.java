@@ -61,4 +61,11 @@ public class CreatSever {
         return null;
     }
 
+
+    public static void main(String[] args){
+        CreatSever sever = new CreatSever();
+        sever.createSever();
+        sever.waitClient();
+    }
+
 }

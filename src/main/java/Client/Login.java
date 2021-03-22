@@ -2,8 +2,6 @@ package Client;
 
 
 
-import Tools.SeverSqlTools;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -11,7 +9,7 @@ import java.awt.event.*;
 public class Login {
 
     private boolean Can_Drag = false;
-    private connectSever severs;
+    private ConnectServer severs;
 
     /**
      * 构造器
@@ -19,8 +17,9 @@ public class Login {
      * 连接Sever
      */
     public Login(){
-        severs = new connectSever();
+        severs = new ConnectServer();
         severs.connSever();
+        severs.start();
     }
 
     public static void main(String[] args) {
@@ -114,7 +113,9 @@ public class Login {
             @Override
             public void mouseClicked(MouseEvent e) {
                 //关闭窗口
-                severs.sendNoOnlineMsg();
+                if(severs!=null){
+                    severs.sendNoOnlineMsg();
+                }
                 System.exit(0);
             }
             @Override
@@ -139,7 +140,7 @@ public class Login {
         account.setBounds(135, 120, 200, 30);
         frame.add(account);
 
-        JTextField password = new JTextField();
+        JPasswordField password = new JPasswordField();
         password.setBounds(135, 160, 200, 30);
         frame.add(password);
 
@@ -165,9 +166,7 @@ public class Login {
         frame.add(sign_up);
         sign_up.addActionListener(e -> {
             //弹出一个新的窗口，有很多的界面
-            JFrame frames = new JFrame();
-            frames.setTitle("注册窗口");
-
+            FrameTools.registFrame(severs);
         });
 
         JButton forget = new JButton("找回密码");
@@ -183,18 +182,39 @@ public class Login {
         sign_in.setFont(new Font("宋体", Font.BOLD, 15));
         sign_in.setBounds(135, 250, 180, 40);
         sign_in.addActionListener(e -> {
-            ConnectWithServer connect=new ConnectWithServer();
             //判断是否合法
-
-
-
-
-            if(connect.Clink_Login_Operation(account.getText(),password.getText())){
-                frame.dispose();
-            }else{
-                JOptionPane.showConfirmDialog(null,"输入的密码错误");
+            String acc = account.getText();
+            String pass = new String(password.getPassword());
+            if(acc.length()!=5){
+                JOptionPane.showConfirmDialog(null,"您输入的账号错误，账号需为五位数字");
+                account.setText("");
+                password.setText("");
                 return;
             }
+            for(int i=0;i<acc.length();i++){
+                if(acc.charAt(i)-'0'<0||acc.charAt(i)-'0'>9){
+                    JOptionPane.showConfirmDialog(null,"您输入的账号包含非法字符!");
+                    account.setText("");
+                    password.setText("");
+                    return;
+                }
+            }
+            //开始验证信息
+            sign_in.setText("登 陆 中...");
+            System.out.println(acc+"   "+pass);
+            new Thread(){
+                public void run(){
+                    if(severs.Clink_Login_Operation(acc,pass)){
+                        new Client(severs,acc).UI();
+                        frame.dispose();
+                    }else{
+                        JOptionPane.showConfirmDialog(null,"输入的密码错误");
+                        sign_in.setText("登        录");
+                        return;
+                    }
+                }
+            }.start();
+            return;
         });
         frame.add(sign_in);
 

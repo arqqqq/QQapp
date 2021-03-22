@@ -18,10 +18,12 @@ public class Chat {
     {
         time_format = new SimpleDateFormat(("MM-dd HH:mm:ss"));
     }
-
-    ConnectWithServer connect;
-    public Chat(ConnectWithServer connect){
+    String Destaccount;
+    String AccountIn;
+    ConnectServer connect;
+    public Chat(ConnectServer connect,String Destaccount,String AccountIn){
         this.connect=connect;
+        this.AccountIn = AccountIn;
     }
 
     public void Open() {
@@ -41,6 +43,7 @@ public class Chat {
 
         JTextPane context_jta = new JTextPane();
         Document doc = context_jta.getDocument();
+        connect.setJTextPane(context_jta);
         //聊天记录不可编辑
         context_jta.setEditable(false);
         context_jta.setOpaque(false);
@@ -96,6 +99,7 @@ public class Chat {
                                 + "                                           "
                                 + time_format.format(new Date()) + "\n"
                                 + send_context_jta.getText() + "\n";
+                        connect.sendTextMsg(AccountIn,Destaccount,send_context_jta.getText());
                         try {
                             doc.insertString(doc.getLength(), str, new SimpleAttributeSet());
                         } catch (BadLocationException ef) {
@@ -130,29 +134,7 @@ public class Chat {
         //发送消息按钮
         JButton send = new JButton("发  送");
         send.setBounds(570, 112, 79, 30);
-//        send.addActionListener(new ActionListener() {
-//            String str;
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                if (!send_context_jta.getText().equals("")) {
-//                    str = "                                              "
-//                            + "                                           "
-//                            + time_format.format(new Date()) + "\n"
-//                            + send_context_jta.getText() + "\n";
-//                    send_context_jta.setText("");
-//                    try {
-//                        //设置文字背景色
-////                        SimpleAttributeSet si=new SimpleAttributeSet();
-////                        StyleConstants.setBackground(si,Color.yellow);
-//                        doc.insertString(doc.getLength(), str, new SimpleAttributeSet());
-//                    } catch (BadLocationException ef) {
-//                        ef.printStackTrace();
-//                    }
-//                }
-//                send_context_jta.requestFocus();
-//            }
-//        });
+
         send.addActionListener(e -> {connect.Clink_Send_Operation();});
         send_context.add(send);
 

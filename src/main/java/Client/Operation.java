@@ -11,7 +11,7 @@ public interface Operation {
     /*
     点击好友弹出聊天框
      */
-    public void Clink_Friend_Operation(String friend_name);
+    public void Clink_Friend_Operation(String friend_name,String sender);
 
     /*
     点击发送文字

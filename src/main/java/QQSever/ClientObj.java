@@ -1,10 +1,13 @@
 package QQSever;
 
+import Client.Client;
 import Tools.ConnTools;
 import Tools.SendMsg;
 
 import java.io.*;
 import java.net.Socket;
+
+import static java.lang.System.*;
 
 public class ClientObj extends Thread{
 
@@ -72,9 +75,10 @@ public class ClientObj extends Thread{
                     switch (style){
                         //接收的报文头为1，则接收信息为远程登陆阶段
                         case 1:{
-                            if(vertifyAccount()==20){
+                            if(vertifyAccount()==30){
                                 //发送登陆成功协议，并切调用获取好友信息的方法，发送好友信息
-                            }else if(vertifyAccount()==30){
+                                sendSuccLoginMsg();
+                            }else if(vertifyAccount()==20){
                                 sendLoginError(); //发送账号已经在其它地方登陆的信息
                             }else if(vertifyAccount()==0){
                                 sendPassError();  //发送密码错误的信息
@@ -121,6 +125,7 @@ public class ClientObj extends Thread{
             byte[] accbyt = new byte[accLen];
             dint.read(accbyt);
             String account = new String(accbyt);
+            this.account = account;
             int passlen = dint.readInt();
             byte[] passbyt = new byte[passlen];
             dint.read(passbyt);
@@ -162,6 +167,18 @@ public class ClientObj extends Thread{
             dout.writeBoolean(false);
             dout.writeInt(11);
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 发送密码验证成功日志
+     */
+    public void sendSuccLoginMsg(){
+        try {
+            dout.write(1);
+            dout.writeBoolean(true);
+        }catch (IOException e){
             e.printStackTrace();
         }
     }
@@ -256,6 +273,7 @@ public class ClientObj extends Thread{
             e.printStackTrace();
         }
     }
+
 
 
 

@@ -36,13 +36,15 @@ public class Client {
     DefaultMutableTreeNode bl1 = new DefaultMutableTreeNode("朋友");
     JTree jtree = new JTree(root);
 
-    ConnectWithServer connect;
+    String accountIn;
+    ConnectServer connect;
 //    public static void main(String[] args) {
 //        Display.Client QQ = new Display.Client();
 //        QQ.UI();
 //    }
-    public Client(ConnectWithServer connect){
+    public Client(ConnectServer connect,String accountIn){
         this.connect=connect;
+        this.accountIn = accountIn;
     }
 
     public void expandTree(JTree jtree) {
@@ -60,8 +62,8 @@ public class Client {
                     //点击两次好友，弹出对话框
                     DefaultMutableTreeNode treeNode=(DefaultMutableTreeNode)jtree.getLastSelectedPathComponent();
                     if(treeNode.toString().equals("朋友")){
-                        connect.Clink_Friend_Operation("朋友");
-                        new Chat(connect).Open();
+                        connect.Clink_Friend_Operation("10000",accountIn);
+
                     }
                 }
 
@@ -123,7 +125,7 @@ public class Client {
         JFrame jf = new JFrame();
         jf.setTitle("QQ界面");
         jf.setSize(350, 750);
-        jf.setLocation(1500, 100);
+        jf.setLocation(1000, 100);
         // 窗口大小不可改变
         jf.setResizable(false);
         // 自定义布局
@@ -132,7 +134,7 @@ public class Client {
 
         // 背景图片
         JLabel back = new JLabel();
-        Image background = new ImageIcon("background.jpg").getImage()
+        Image background = new ImageIcon("background.jpeg").getImage()
                 .getScaledInstance(350, 750, JFrame.DO_NOTHING_ON_CLOSE);
         back.setIcon(new ImageIcon(background));
         // 设置布局位置
