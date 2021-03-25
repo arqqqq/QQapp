@@ -4,6 +4,9 @@ import TableClass.Account;
 
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -47,133 +50,166 @@ public class ConnTools {
     }
 
     /**
-     * 登陆验证 防止sql注入
-     * @param account
-     * @param password
+     * 验证账号登陆返回四个情况
+     * 1、账号不存在  10
+     * 2、账号存在，但是密码错误  11
+     * 3、账号存在，密码正确，但是该账号已经登陆  12
+     * 4、账号存在，密码正确，并且登陆状态还为未登陆  13
+     * @param acc
+     * @param pass
      * @return
      */
-    public static boolean verityLog(String account,String password){
+    public static byte vertifyAccount(String acc,String pass)  {
         Connection conn = connectSQL();
+        ResultSet rs = null;
         try {
             Statement stml = conn.createStatement();
-            String sql = "select *from account where account = "+account+"&& password ="+password;
-            ResultSet rs = stml.executeQuery(sql);
-            int moderindex = 0;
-            while (rs.next()){
-                if(account.equals(rs.getString(1))&&password.equals(rs.getString(2))){
-                    return true;
+            System.out.println("账户："+acc+"密码："+pass);
+            String sql = "select *from account where account="+acc+"&& password = "+pass;
+            rs = stml.executeQuery(sql);
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(rs!=null){
+                while (rs.next()){
+                    if(acc.equals(rs.getString(1))){
+                        if(pass.equals(rs.getString(2))){
+                            if(rs.getInt(6)!=1){
+                                System.out.println("返回"+13);
+                                return 13;
+                            }
+                            System.out.println("返回"+12);
+                            return 12;
+                        }
+                        System.out.println("返回"+11);
+                        return 11;
+                    }
                 }
             }
+            rs.close();
+            stml.close();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        System.out.println("返回"+10);
+        return 10;
+    }
+
+    /**
+     * 设置账户名为account的账户的等录状态
+     * @param account
+     * @return
+     */
+    public static boolean setLoginStage(String account,int stage){
+           Connection conn = connectSQL();
+           String sql = "UPDATE account SET stage =? where account ="+account;
+        try {
+            PreparedStatement prml = conn.prepareStatement(sql);
+            prml.setInt(1,stage);
+            prml.execute();
+            prml.close();
+            return true;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
         return false;
     }
 
     /**
-     * 判断该账号状态是否时已经登陆
+     * 验证qq号是否已经存在，两种情况
+     * 1、qq号已经被注册---->true
+     * 2、qq号没有被注册或者qq号根本不存在---->false
+     * @param qq
+     * @return
+     */
+    public static boolean vertifyQQ(String qq){
+        Connection conn = connectSQL();
+        try {
+            Statement stml = conn.createStatement();
+            String sql = "select *from account where qqnum = "+qq;
+            ResultSet rs = stml.executeQuery(sql);
+            //停顿一秒，确保获取到mySQL中的数据
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            while (rs.next()){
+                if(rs.getString(5).equals(qq)){
+                    return true;
+                }
+            }
+            //关闭
+            rs.close();
+            stml.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+        }
+        return false;
+    }
+
+    /**
+     * 用于判断客户端发送过来的账号是否已经被注册
+     * 1、已经被注册----true
+     * 2、没有被注册----false
      * @param account
      * @return
      */
-    public static boolean isLogin(String account){
-        Connection conn = connectSQL();
+    public static boolean vertifyAccount(String account){
         try {
+            //获取与数据库的连接
+            Connection conn = connectSQL();
             Statement stml = conn.createStatement();
             String sql = "select *from account where account ="+account;
             ResultSet rs = stml.executeQuery(sql);
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             while (rs.next()){
-                if(account.equals(rs.getString(1))&&rs.getInt(6)!=0){
+                if(rs.getString(1).equals(account)){
                     return true;
                 }
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            rs.close();
+            stml.close();
+            conn.close();
+        }catch (SQLException e) {
+            e.printStackTrace();
         }
         return false;
     }
 
 
     /**
-     * 向数据库中添加新的用户元素
-     * @param account
+     * 将用户数据写入mysql
+     * @param acc
      */
-    public static void creatAccount(Account account){
-        Connection conn = connectSQL();
+    public static void addAccount(Account acc){
         try {
-
-            String sql = "INSERT INTO account values(?,?,?,?,?)";
-            PreparedStatement prml =conn.prepareStatement(sql);
-
-            //传入参数
-            prml.setString(1,account.getAccount());
-            prml.setString(2,account.getPassword());
-            prml.setString(3,account.getIDname());
-            prml.setString(4,account.getPriname());
-            prml.setString(5,account.getQqnum());
-
-            prml.execute();
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
-
-    /**
-     * 诊断表格中是否存在相同的qq号码
-     */
-    private static boolean numIsExist(String qqnum){
-        Connection conn = connectSQL();
-        try {
-            Statement stml = conn.createStatement();
-            String sql = "select *from account where qqnum = "+qqnum;
-            ResultSet rs = stml.executeQuery(sql);
-            while (rs.next()){
-                if(rs.getString(5).equals(qqnum)){
-                    return true;
-                }
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return false;
-    }
-
-
-
-
-    /**
-     * 向数据库请求查询qq数据，检测qq账号是否已经被注册
-     * @param qqnum
-     * @return  返回一个布尔值
-     */
-    public static boolean checkQQIsExits(String qqnum){
-        Connection conn = connectSQL();
-        Statement stml = null;
-        try {
-            stml = conn.createStatement();
-            String sql = "select *from account where qqnum = "+qqnum;
-            ResultSet rs = stml.executeQuery(sql);
-            while (rs.next()){
-                if(qqnum.equals(rs.getString(5))){
-                    return true;
-                }
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return false;
-    }
-
-    /**
-     * 创建账户，将账户数据写入mysql中
-     * @param account
-     * @param password
-     */
-    public static void createAccount(String account,String password,String qqnum){
-        Connection conn = connectSQL();
-        try {
-            Account acc = new Account(account,password,"qquser","helloword",qqnum);
+            Connection conn = connectSQL();
             String sql = "insert into account values(?,?,?,?,?,?)";
             PreparedStatement prml = conn.prepareStatement(sql);
             prml.setString(1,acc.getAccount());
@@ -183,10 +219,49 @@ public class ConnTools {
             prml.setString(5,acc.getQqnum());
             prml.setInt(6,0);
             prml.execute();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            prml.close();
+            conn.close();
+        }catch (SQLException e){
+            e.printStackTrace();
         }
-
     }
 
+
+    /**
+     * 从数据库获取该账号的好友信息
+     * @param account 要查询的账号
+     * @return
+     * 存在该账号的话，返回好友信息
+     * 不存在的话，返回null
+     */
+    public static String getHaoYouMgs(String account){
+        Connection conn = connectSQL(); //获取与数据库的连接
+        try {
+            Statement stml = conn.createStatement();
+            String sql = "select *from account where account="+account;
+            ResultSet rs = stml.executeQuery(sql);
+            try {
+                TimeUnit.SECONDS.sleep((long) 0.5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            while (rs.next()){
+                if(rs.getString(1).equals(account)){
+                    System.out.println("查询结果:"+rs.getString(7));
+                    return rs.getString(7);
+                }
+            }
+            rs.close();
+            stml.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        return null;
+    }
 }

@@ -36,16 +36,9 @@ public class Client {
     DefaultMutableTreeNode bl1 = new DefaultMutableTreeNode("朋友");
     JTree jtree = new JTree(root);
 
-    String accountIn;
-    ConnectServer connect;
-//    public static void main(String[] args) {
-//        Display.Client QQ = new Display.Client();
-//        QQ.UI();
-//    }
-    public Client(ConnectServer connect,String accountIn){
-        this.connect=connect;
-        this.accountIn = accountIn;
-    }
+
+
+
 
     public void expandTree(JTree jtree) {
         TreeNode root = (TreeNode) jtree.getModel().getRoot();
@@ -58,14 +51,7 @@ public class Client {
         jtree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount()==2){
-                    //点击两次好友，弹出对话框
-                    DefaultMutableTreeNode treeNode=(DefaultMutableTreeNode)jtree.getLastSelectedPathComponent();
-                    if(treeNode.toString().equals("朋友")){
-                        connect.Clink_Friend_Operation("10000",accountIn);
 
-                    }
-                }
 
             }
 

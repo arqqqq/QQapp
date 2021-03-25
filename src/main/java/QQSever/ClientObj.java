@@ -1,12 +1,10 @@
 package QQSever;
 
-import Client.Client;
-import Tools.ConnTools;
-import Tools.SendMsg;
 
+import TableClass.Account;
+import Tools.ConnTools;
 import java.io.*;
 import java.net.Socket;
-
 import static java.lang.System.*;
 
 public class ClientObj extends Thread{
@@ -44,63 +42,32 @@ public class ClientObj extends Thread{
         this.mysever = mysever;
     }
 
-
     /**
-     * 设置ClientObj的标签
-     * @param account
+     * 为ClientThread设置一个唯一的标识
      */
-    public void setAccount(String account){
-        this.account = account;
+    public void setAccount(String acc){
+        this.account = acc;
     }
 
     /**
-     * 返回account标签对象
-     * @return
+     * 获得account
      */
     public String getAccount(){
         return account;
     }
 
-
-    /**
-     *
-     */
     @Override
     public void run(){
         //进行接收
         while (true){
             if(isAlive){
                 try {
-                    int style = dint.read();//获取发送的数据类型
-                    switch (style){
-                        //接收的报文头为1，则接收信息为远程登陆阶段
-                        case 1:{
-                            if(vertifyAccount()==30){
-                                //发送登陆成功协议，并切调用获取好友信息的方法，发送好友信息
-                                sendSuccLoginMsg();
-                            }else if(vertifyAccount()==20){
-                                sendLoginError(); //发送账号已经在其它地方登陆的信息
-                            }else if(vertifyAccount()==0){
-                                sendPassError();  //发送密码错误的信息
-                            }
-                        }
-                        case 2:{
-                            regestAccount();//注册账号
-                        }
-                        case 3:{
-
-                        }
-                        case 4:{
-                            String sendAcc = readString();
-                            String sendDes = readString();
-                            String msg = readString();
-                            if(mysever.getClient(sendDes)!=null){
-                                mysever.getClient(sendDes).sendMsg(sendAcc,msg);
-                            }
-                        }
+                    byte stage = dint.readByte();
+                    switch (stage){
+                        case 1: login();
+                        case 3: vertifyQQ();
                         case 5:{
                             isAlive = false;
-                            mysever.removeClient(this);
                         }
                     }
                 } catch (IOException e) {
@@ -113,171 +80,136 @@ public class ClientObj extends Thread{
 
     }
 
+    /**
+     * 进行账号注册的方法
+     * 两种情况
+     * 1、该qq号已经被注册---->true
+     * 2、该qq号还没有被注册或者根本不存在该qq号---->false
+     */
+    private void vertifyQQ() {
+        String qqnum = readStr();
+        boolean bool = ConnTools.vertifyQQ(qqnum);  //检索mysql，确定是否存在
+        try {
+            dout.writeBoolean(bool);//发送处理结果
+            boolean huifu = dint.readBoolean(); //接收结果
+            out.println("接收到了："+huifu);
+            if(huifu){
+                //接收用户数据
+                String account = readStr();
+                //检查用户账号是否已经被注册
+                boolean isVertify = ConnTools.vertifyAccount(account);
+                dout.writeBoolean(isVertify);
+                if(!isVertify){
+                    //说明账户可以被注册,接收账户发送过来的账号信息
+                    /*
+                    1、用户接收到反馈，并发送过来了密码---->15
+                    2、用户接收到反馈，说服务器我是跟你闹着玩呢---->16
+                     */
+                    byte temp = dint.readByte();
+                    if(temp==15){
+                        out.println("接收到了！");
+                        //接收用户的密码信息，将用户信息写入mysql
+                        String pass = readStr();
+                        Account AccCli = new Account(account,pass,"qquser","helloword",qqnum);
+                        ConnTools.addAccount(AccCli);
+                        return;
+                    }else {
+                        return;
+                    }
+                }else {
+                    //直接返回
+                    return;
+                }
+            }else {
+                //直接返回
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     /**
-     * 验证登陆信息
+     * 读取String的方法
      * @return
      */
-    public int vertifyAccount(){
+    private String readStr(){
         try {
-            //获取客户端发送过来的登陆信息 账户和密码
-            int accLen = dint.readInt();
-            byte[] accbyt = new byte[accLen];
-            dint.read(accbyt);
-            String account = new String(accbyt);
-            this.account = account;
-            int passlen = dint.readInt();
-            byte[] passbyt = new byte[passlen];
-            dint.read(passbyt);
-            String pass = new String(passbyt);
-            //1、如果账号密码正确但是该账号已经被在其它地方登陆 返回20
-            if(ConnTools.verityLog(account,pass)&&ConnTools.isLogin(account)){
-                return 20;
-            }else if(ConnTools.verityLog(account,pass)) {
-                setAccount(account);
-                return 30;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-
-    /**
-     * 发送密码错误日志
-     */
-    public void sendPassError(){
-        try {
-            dout.write(1);
-            dout.writeBoolean(false);
-            dout.writeInt(10);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 发送账号已经登陆日志
-     */
-    public void sendLoginError(){
-        try {
-            dout.write(1);
-            dout.writeBoolean(false);
-            dout.writeInt(11);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 发送密码验证成功日志
-     */
-    public void sendSuccLoginMsg(){
-        try {
-            dout.write(1);
-            dout.writeBoolean(true);
+            int len = dint.readInt();
+            byte byt[] = new byte[len];
+            dint.read(byt);
+            String msg = new String(byt);
+            return msg;
         }catch (IOException e){
             e.printStackTrace();
         }
+        return "";
     }
 
     /**
-     * 执行注册账号的操作
-     */
-    public void regestAccount(){
-        /**
-         * 1、先接收qq号码
-         * 2、判断qq是否已经注册 如果没有注册的话发送一个验证码
-         * 3、接收验证码正确信息
-         * 4、创建账号
-         */
-        try {
-            //接收qq账号
-            int len = dint.readInt();
-            byte[] qqbyt = new byte[len];
-            dint.read(qqbyt);
-            String qqnum = new String(qqbyt);
-
-            //判断qq是否已经注册
-            if(ConnTools.checkQQIsExits(qqnum)){
-                //向客户机反馈qq号已经被注册的报文消息
-                dout.write(2);
-                dout.writeBoolean(true);
-                return;
-            }else {
-                //通过pop3和stmp协议给qq邮箱发送一个信息
-                String vertcode = SendMsg.sendMessages(qqnum);
-                dout.write(2);
-                dout.writeBoolean(false);
-                writeString(vertcode);
-            }
-            //进行信息接收
-            boolean isRight = dint.readBoolean();
-            //信息正确的话，接收账号、密码信息将信息写入数据库
-            if(isRight){
-                String account = readString();
-                String pass = readString();
-                ConnTools.createAccount(account,pass,qqnum);
-            }else {
-                return;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     * 写字符串的操作
+     * 发送String字符串的方法
      * @param str
      */
-    private void writeString(String str){
-        int len = str.length();
+    private void writeStr(String str){
+        if(str==null||str.length()==0) return;
         try {
+            int len = str.length();
             dout.writeInt(len);
-            byte[] strbyt = str.getBytes();
-            dout.write(strbyt);
-        } catch (IOException e) {
+            byte[] byt = str.getBytes();
+            dout.write(byt);
+        }catch (IOException e){
             e.printStackTrace();
         }
-    }
 
+    }
     /**
-     * 读取字符串的操作
-     * @return
+     * 远程登陆方法
      */
-    private String readString(){
+    private void login() {
+        //接收发送过来的账号和密码
+        String account = readStr();
+        String password = readStr();
+        out.println("接收到的账号为："+account+" 密码为："+password);
+        //验证账号和密码的正确性
+        byte stage = ConnTools.vertifyAccount(account,password);
+        out.println("处理结果为："+stage);
         try {
-            int len = dint.readInt();
-            byte[] strbyt = new byte[len];
-            dint.read(strbyt);
-            String str = new String(strbyt);
-            return str;
+            dout.write(stage);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        //等代接收Client的反馈反馈为一个boolean值
+        try {
+            boolean isTrue = dint.readBoolean();
+            if(isTrue){
+                setAccount(account);
+                //并设置account的登陆状态为已登录
+                ConnTools.setLoginStage(account,1);
+                String haoYouMsg = ConnTools.getHaoYouMgs(account);
+                writeStr(haoYouMsg);
+                return;
+            }else {
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return;
     }
 
 
 
-    public void sendMsg(String sendAcc,String msg){
+    @Override
+    public void finalize(){
         try {
-            dout.write(4);
-            writeString(sendAcc);
-            writeString(msg);
+            dout.close();
+            dint.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
-
-
-
 
 
 }

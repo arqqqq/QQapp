@@ -5,11 +5,13 @@ package Client;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class Login {
 
     private boolean Can_Drag = false;
-    private ConnectServer severs;
+
 
     /**
      * 构造器
@@ -17,9 +19,7 @@ public class Login {
      * 连接Sever
      */
     public Login(){
-        severs = new ConnectServer();
-        severs.connSever();
-        severs.start();
+
     }
 
     public static void main(String[] args) {
@@ -112,10 +112,7 @@ public class Login {
         close.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //关闭窗口
-                if(severs!=null){
-                    severs.sendNoOnlineMsg();
-                }
+                ConnectWithServer.sendExitMsg();
                 System.exit(0);
             }
             @Override
@@ -165,8 +162,7 @@ public class Login {
         sign_up.addActionListener(e -> {});
         frame.add(sign_up);
         sign_up.addActionListener(e -> {
-            //弹出一个新的窗口，有很多的界面
-            FrameTools.registFrame(severs);
+            FrameTools.registFrame();
         });
 
         JButton forget = new JButton("找回密码");
@@ -199,22 +195,45 @@ public class Login {
                     return;
                 }
             }
-            //开始验证信息
-            sign_in.setText("登 陆 中...");
-            System.out.println(acc+"   "+pass);
-            new Thread(){
-                public void run(){
-                    if(severs.Clink_Login_Operation(acc,pass)){
-                        new Client(severs,acc).UI();
-                        frame.dispose();
-                    }else{
-                        JOptionPane.showConfirmDialog(null,"输入的密码错误");
-                        sign_in.setText("登        录");
-                        return;
-                    }
+            //进行账号验证，
+            final byte[] byts = {14};
+            final Object obj = new Object();
+            byts[0] = ConnectWithServer.login(acc,pass);
+            System.out.println("接收过来的值为"+byts[0]);
+            switch (byts[0]){
+                case 10: {
+                    JOptionPane.showConfirmDialog(null,"账号不存在");
+                    sign_in.setText("登        录");
+                    return;
                 }
-            }.start();
-            return;
+                case 11: {
+                    JOptionPane.showConfirmDialog(null,"密码错误");
+                    sign_in.setText("登        录");
+                    return;
+                }
+                case 12: {
+                    JOptionPane.showConfirmDialog(null,"账号密码正确！");
+                    sign_in.setText("登        录");
+                    return;
+                }
+                case 13: {
+                    JOptionPane.showConfirmDialog(null,"登陆成功！");
+                    //等待接收对面的好友数据
+                    String haoyoumsg = ConnectWithServer.waitForHaoYouMsg();
+                    //解析好友msg
+                    System.out.println("好友信息："+haoyoumsg);
+                    //根据这个好友信息动态的创建一个一个动态的好友窗格
+
+                    sign_in.setText("登        录");
+                    return;//登陆成功!
+                }
+                case 14: {
+                    JOptionPane.showConfirmDialog(null,"连接超时");
+                    sign_in.setText("登        录");
+                    return;
+                }
+            }
+
         });
         frame.add(sign_in);
 

@@ -1,5 +1,8 @@
 package Client;
 
+import Tools.ConnTools;
+import Tools.SendMsg;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.TimeUnit;
@@ -7,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public class FrameTools {
 
 
-    public static void registFrame(ConnectServer sever){
+    public static void registFrame(){
         final boolean[] isSend = {false};
         JFrame frames = new JFrame();
         frames.setTitle("注册窗口");
@@ -79,102 +82,127 @@ public class FrameTools {
         frame.add(btn1,JLayeredPane.DRAG_LAYER);
         frame.add(btn2,JLayeredPane.DRAG_LAYER);
         frame.add(btn3,JLayeredPane.DRAG_LAYER);
-        final String[] vertyCode = {""};
-        final Thread[] showThr = {null};
+        final boolean[] isClice = {false};
+        final String[] code = {""};
+        final Thread[] thr = {null};
         //添加监听器
         btn1.addActionListener(e -> {
-            if(!isSend[0]){
-                /**
-                 * 当点击发送按钮时
-                 * 首先获取qq输入栏的qq账号
-                 * 检测qq账号是否合法，合法的话，将qq号发送给服务器，服务器传回验证码
-                 */
-                String qqnum = fil1.getText();
-                if(qqnum.length()==0||qqnum==null){
-                    JOptionPane.showConfirmDialog(null,"请输入qq号！");
-                    return;
-                }
-                if(qqnum.length()>12||qqnum.length()<8){
-                    JOptionPane.showConfirmDialog(null,"请输入正确的qq号");
-                    return;
-                }
-                for(int i=0;i<qqnum.length();i++){
-                    if(qqnum.charAt(i)-'0'<0||qqnum.charAt(i)-'0'>9){
-                        JOptionPane.showConfirmDialog(null,"您输入的qq号含有非法字符，请重新输入");
-                        return;
-                    }
-                }
-                //如果执行了上面的代码还没有返回，说明qq是格式是存在的
-                sever.sendRegistMsg(qqnum);
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (InterruptedException interruptedException) {
-                    interruptedException.printStackTrace();
-                }
-                vertyCode[0] = sever.verityCode();
-                //并切启动一个线程，对验证码的有效性进行操作
-                isSend[0] = true;
-                showThr[0] = new Thread(){
-                    int i=0;
-                    @Override
-                    public void run(){
-                        while (i<120){
-                            labels.setText(120-i+"秒后可重新发送");
-                            try {
-                                TimeUnit.SECONDS.sleep(1);
-                            } catch (InterruptedException interruptedException) {
-                                interruptedException.printStackTrace();
-                                break;
-                            }
-                            i++;
-                        }
-                        isSend[0] = false;
-                        vertyCode[0] = "";
-                    }
-                };
-                showThr[0].start();
-            }else {
-                JOptionPane.showConfirmDialog(null,"验证码已发送，请稍后重试！");
-                return;
-            }
-
-        });
-        btn2.addActionListener(e -> {
-            //说明已经获得了验证码
-            if(vertyCode[0]!=null&&!vertyCode[0].equals("")){
-                String vetcode = fil2.getText();
-                if(vetcode.equals(vertyCode[0])){
-                    JOptionPane.showConfirmDialog(null,"验证码正确，请输入新账户和密码！");
-                    fil3.setEnabled(true);
-                    fil4.setEnabled(true);
-                    showThr[0].interrupt();
-                    labels.setText("验证成功！");
-                    vertyCode[0] = "";
-                }else {
-                    JOptionPane.showConfirmDialog(null,"验证码错误！");
-                }
-            }else {
-                JOptionPane.showConfirmDialog(null,"请发送验证码");
-            }
-
-        });
-        btn3.addActionListener(e -> {
-           String account = fil3.getText();
-           String password = new String(fil4.getPassword());
-           if(account.length()!=5){
-               JOptionPane.showConfirmDialog(null,"账号必须为五位的数字");
-               return;
-           }
-           for(int i=0;i<account.length();i++){
-               if(account.charAt(i)-'0'<0||account.charAt(i)-'0'>9){
-                   JOptionPane.showConfirmDialog(null,"您输入的账户不合法！必须为五位的数字");
+           if(!isClice[0]){
+               //首先判断获取到的qq号码是否合法
+               String qqnum = fil1.getText();
+               if(qqnum.length()>11||qqnum.length()<7){
+                   //当qq号码的长度大于11位或者小于7位时
+                   JOptionPane.showConfirmDialog(null,"您输入的qq号码不符合要求");
+                   return;
+               }
+               for(int i=0;i<qqnum.length();i++){
+                   char temp = qqnum.charAt(i);
+                   if(temp-'0'<0||temp-'0'>9){
+                       JOptionPane.showConfirmDialog(null,"qq号码包含非法字符！");
+                       return;
+                   }
+               }
+               //当判断成功qq号码满足条件之后，向服务器请求该账号已经被注册
+               byte byt = ConnectWithServer.vertifyQQnum(qqnum);
+               if(byt==2){
+                   //给该qq号发送验证码
+                   code[0] = SendMsg.sendMessages(qqnum);
+                   System.out.println("验证码为:"+code[0]);
+                   if(code[0]==null){
+                       JOptionPane.showConfirmDialog(null,"找不到该qq号码！");
+                       ConnectWithServer.sendBool(false);
+                       ConnectWithServer.sendVertifyMsg((byte) 5);
+                       ConnectWithServer.setSocketToNull();
+                       return;
+                   }else {
+                       thr[0] =new Thread(()->{
+                           isClice[0] = true;
+                           int i=0;
+                           for(;i<120;i++){
+                               labels.setText((120-i)+"秒后重新发送");
+                               try {
+                                   TimeUnit.SECONDS.sleep(1);
+                               } catch (InterruptedException interruptedException) {
+                                   interruptedException.printStackTrace();
+                                   break;
+                               }
+                           }
+                           isClice[0] = false;
+                           if(i==119){
+                               ConnectWithServer.sendBool(false);
+                               ConnectWithServer.sendVertifyMsg((byte) 5);
+                               ConnectWithServer.setSocketToNull();
+                           }
+                       });
+                       thr[0].start();
+                   }
+               }else if(byt==3){
+                   JOptionPane.showConfirmDialog(null,"连接超时！");
+                   return;
+               }else if(byt==1){
+                   JOptionPane.showConfirmDialog(null,"该qq号码已被注册！");
                    return;
                }
            }
-           sever.sendAccountMsg(account,password);
-           JOptionPane.showConfirmDialog(null,"注册成功！");
-           frames.dispose();
-           return;
+           else {
+               JOptionPane.showConfirmDialog(null,"验证码已经发送！请稍后重试");
+               return;
+           }
+        });
+        btn2.addActionListener(e -> {
+            String vetcode = fil2.getText();
+            if(vetcode.equals(code[0])){
+                JOptionPane.showConfirmDialog(null,"验证码正确！");
+                //将账号密码输入框设置为可编辑
+                fil3.setEnabled(true);
+                fil4.setEnabled(true);
+                System.out.println("编辑成功！");
+                thr[0].interrupt();
+                thr[0] = null;
+                ConnectWithServer.sendBool(true);
+            }else {
+                JOptionPane.showConfirmDialog(null,"验证码错误！");
+            }
+        });
+        //为注册按钮添加监听器
+        btn3.addActionListener(e->{
+            if(fil3.isEditable()&&fil4.isEditable()){
+                String account = fil3.getText();
+                String password = new String(fil4.getPassword());
+                if(account.length()!=5){
+                    JOptionPane.showConfirmDialog(null,"账号必须为五位的数字");
+                    return;
+                }
+                for(int i=0;i<account.length();i++){
+                    if(account.charAt(i)-'0'<0||account.charAt(i)-'0'>9){
+                        JOptionPane.showConfirmDialog(null,"您输入的账号不合法！");
+                        return;
+                    }
+                }
+                if(password.getBytes().length>30){
+                    JOptionPane.showConfirmDialog(null,"密码位数过多！");
+                    return;
+                }
+                //通过前面的验证的话，则进入账号发送阶段
+                ConnectWithServer.sendStr(account);
+                System.out.println("发送成功！");
+                boolean bool = ConnectWithServer.readBool();
+                if(!bool){
+                    ConnectWithServer.sendVertifyMsg((byte) 15);
+                    ConnectWithServer.sendStr(password);
+                    //断开连接
+                    ConnectWithServer.sendVertifyMsg((byte) 5);
+                    ConnectWithServer.setSocketToNull();//将socket置空
+                    frames.dispose();//关闭窗口
+
+                }else {
+                    JOptionPane.showConfirmDialog(null,"该账号已经被注册！");
+                    return;
+                }
+            }else {
+                JOptionPane.showConfirmDialog(null,"请发送验证码");
+                return;
+            }
         });
 
         frames.setLayeredPane(frame);

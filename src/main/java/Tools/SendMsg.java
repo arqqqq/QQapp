@@ -66,7 +66,7 @@ public class SendMsg {
 
 
 
-            String msg = "仿qq聊天室:\n验证码："+authcode+"\n为保证您的账号安全\n请不要将验证码发送给他人";
+            String msg = "仿qq聊天室:\n验证码:  "+authcode+"\n为保证您的账号安全\n请不要将验证码发送给他人";
             //html文件
             StringBuilder sb = new StringBuilder();
             sb.append("<h1>"+msg+"</h1>");

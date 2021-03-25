@@ -43,22 +43,12 @@ public class CreatSever {
     }
 
     /**
-     * 移除下线的客户端
+     * 移除客户段对象
+     * @param cli
+     * @return
      */
-    public void removeClient(ClientObj cli){
-        cligroup.remove(cli);
-    }
-
-    /**
-     * 获取某个客户端的线程对象
-     */
-    public ClientObj getClient(String account){
-        for(int i=0;i<cligroup.size();i++){
-            if(account.equals(cligroup.get(i).getAccount())){
-                return cligroup.get(i);
-            }
-        }
-        return null;
+    public boolean removeCli(ClientObj cli){
+        return cligroup.remove(cli);
     }
 
 
@@ -67,5 +57,7 @@ public class CreatSever {
         sever.createSever();
         sever.waitClient();
     }
+
+
 
 }

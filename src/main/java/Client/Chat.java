@@ -20,9 +20,9 @@ public class Chat {
     }
     String Destaccount;
     String AccountIn;
-    ConnectServer connect;
-    public Chat(ConnectServer connect,String Destaccount,String AccountIn){
-        this.connect=connect;
+
+    public Chat(String Destaccount,String AccountIn){
+
         this.AccountIn = AccountIn;
         this.Destaccount = Destaccount;
     }
@@ -44,7 +44,7 @@ public class Chat {
 
         JTextPane context_jta = new JTextPane();
         Document doc = context_jta.getDocument();
-        connect.setJTextPane(context_jta);
+
         //聊天记录不可编辑
         context_jta.setEditable(false);
         context_jta.setOpaque(false);
@@ -100,7 +100,6 @@ public class Chat {
                                 + "                                           "
                                 + time_format.format(new Date()) + "\n"
                                 + send_context_jta.getText() + "\n";
-                        connect.sendTextMsg(AccountIn,Destaccount,send_context_jta.getText());
                         try {
                             doc.insertString(doc.getLength(), str, new SimpleAttributeSet());
                         } catch (BadLocationException ef) {
@@ -136,7 +135,6 @@ public class Chat {
         JButton send = new JButton("发  送");
         send.setBounds(570, 112, 79, 30);
 
-        send.addActionListener(e -> {connect.Clink_Send_Operation();});
         send_context.add(send);
 
         JScrollPane send_context_jsp = new JScrollPane(send_context_jta);
