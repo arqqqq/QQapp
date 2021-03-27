@@ -13,18 +13,33 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Chat {
-
+    public Document doc;
+    String Opposite_account;
     SimpleDateFormat time_format;
 
     {
         time_format = new SimpleDateFormat(("MM-dd HH:mm:ss"));
     }
+    public Chat(String Opposite_account){
+        this.Opposite_account = Opposite_account;
+    }
+
+    final Thread[] thr = {null};
 
 
+    public void showMsg(String msg){
+        String stl = "                                              "
+                + "                                           "
+                + time_format.format(new Date()) + "\n"
+                + Opposite_account+": "+msg + "\n";
+        try {
+            doc.insertString(doc.getLength(), stl, new SimpleAttributeSet());
+        } catch (BadLocationException ef) {
+            ef.printStackTrace();
+        }
+    }
 
-
-
-    public void Open(String Opposite_account) {
+    public void Open() {
         JFrame chat_frame = new JFrame("好友");
         chat_frame.setSize(800, 700);
         chat_frame.setLocationRelativeTo(null);
@@ -38,7 +53,7 @@ public class Chat {
         chat_frame.add(context);
 
         JTextPane context_jtp = new JTextPane();
-        Document doc = context_jtp.getDocument();
+        doc= context_jtp.getDocument();
         //聊天记录不可编辑
         context_jtp.setEditable(false);
         context_jtp.setOpaque(false);
@@ -75,6 +90,8 @@ public class Chat {
 
         JTextPane send_context_jtp = new JTextPane();
         send_context_jtp.setOpaque(false);
+
+
         //回车键发送消息
         send_context_jtp.addKeyListener(new KeyListener() {
             String str;
@@ -101,6 +118,9 @@ public class Chat {
                         }
                     }
                     send_context_jtp.setText("");
+                    ConnectWithServer.sendVertifyMsg((byte) 4);
+                    ConnectWithServer.sendStr(Opposite_account);
+                    ConnectWithServer.sendStr(send_context_jtp.getText());
                     press_enter = true;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_CONTROL) {

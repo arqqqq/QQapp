@@ -71,6 +71,7 @@ public class ClientObj extends Thread{
                         case 1: login();
                         case 2: findOutPassword();
                         case 3: vertifyQQ();
+                        case 4: sendMsg();
                         case 5:{
                             isAlive = false;
                         }
@@ -83,6 +84,27 @@ public class ClientObj extends Thread{
             }
         }
 
+    }
+
+    private void sendMsg() {
+        String desAccount = readStr();
+        String msg = readStr();
+        DataOutputStream dou = dataOutGroup.get(desAccount);
+        if(dou!=null){
+            try {
+                dou.writeByte(4);
+                int len = getAccount().length();
+                int len2 = msg.length();
+                dou.writeInt(len);
+                dou.write(getAccount().getBytes());
+                dou.writeInt(len2);
+                dou.write(msg.getBytes());
+                return;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return;
     }
 
     /**

@@ -6,7 +6,10 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -23,10 +26,13 @@ public class Clients {
     JTree contacts_tree = new JTree(root);
 
     private ArrayList<String> haoyou;
+    private ConcurrentHashMap<String,Chat> chatCli;
 
     public Clients(ArrayList<String> haoyou) {
+        chatCli = new ConcurrentHashMap<>();
         this.haoyou = haoyou;
     }
+
 
     public void expandTree(JTree jtree) {
         TreeNode root = (TreeNode) jtree.getModel().getRoot();
@@ -44,7 +50,9 @@ public class Clients {
                 if (!str.equals("我的好友") && !str.equals("黑名单") && !str.equals("陌生人") && e.getClickCount() == 2) {
                     //点击两次好友，弹出对话框
                     PeopleNode treeNode = (PeopleNode) node;
-                    new Chat().Open(treeNode.getAccount());
+                    Chat cha = new Chat(treeNode.getAccount());
+                    chatCli.put(treeNode.getAccount(),cha);
+                    cha.Open();
                     System.out.println(treeNode.getAccount());
 
                 }
@@ -199,6 +207,32 @@ public class Clients {
         panel.add(table);
 
         jf.setVisible(true);
+
+        new Thread(()->{
+            DataInputStream din = ConnectWithServer.getInPutStream();
+            while (true){
+                try {
+                    byte stage = din.readByte();
+                    if(stage==4){
+                        //接收字符串信息
+                        int len = din.readInt();
+                        byte byt[] = new byte[len];
+                        String sender = new String(byt);
+                        int len1 = din.readInt();
+                        byte byt1[] = new byte[len1];
+                        String msg = new String(byt1);
+                        Chat cha = chatCli.get(sender);
+                        if(cha!=null){
+                            cha.showMsg(msg);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+
 
     }
 }

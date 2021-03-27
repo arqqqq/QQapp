@@ -17,6 +17,11 @@ public class ConnectWithServer{
      */
     private static DataOutputStream out = null;
     private static DataInputStream in = null;
+
+
+    public static DataInputStream getInPutStream(){
+        return in;
+    }
     /**
      * 获取与服务器的连接
      * @return
@@ -251,8 +256,12 @@ public class ConnectWithServer{
         }
     }
 
-
-
+    /**
+     * 用于找回密码的方法
+     * @param acc
+     * @param qq
+     * @return
+     */
     public static byte sendAccountAndQQnumMsg(String acc,String qq){
         Socket soc = getConnect();
         try {
