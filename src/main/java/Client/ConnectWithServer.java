@@ -253,6 +253,35 @@ public class ConnectWithServer{
 
 
 
+    public static byte sendAccountAndQQnumMsg(String acc,String qq){
+        Socket soc = getConnect();
+        try {
+            DataInputStream dint = new DataInputStream(soc.getInputStream());
+            DataOutputStream dout = new DataOutputStream(soc.getOutputStream());
+            dout.writeByte(2);
+            int len = acc.length();
+            dout.writeInt(len);
+            dout.write(acc.getBytes());
+            int len1 = qq.length();
+            dout.writeInt(len1);
+            dout.write(qq.getBytes());
+            byte byt = dint.readByte();
+            if(byt==22){
+                out = dout;
+                in = dint;
+            }
+            return byt;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 23;
+    }
+
+
+
+
+
+
 
 
 

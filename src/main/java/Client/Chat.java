@@ -1,13 +1,14 @@
 package Client;
 
 
-
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,23 +19,17 @@ public class Chat {
     {
         time_format = new SimpleDateFormat(("MM-dd HH:mm:ss"));
     }
-    String Destaccount;
-    String AccountIn;
 
-    public Chat(String Destaccount,String AccountIn){
 
-        this.AccountIn = AccountIn;
-        this.Destaccount = Destaccount;
-    }
 
-    public void Open() {
+
+
+    public void Open(String Opposite_account) {
         JFrame chat_frame = new JFrame("好友");
         chat_frame.setSize(800, 700);
         chat_frame.setLocationRelativeTo(null);
         chat_frame.setLayout(null);
         chat_frame.setResizable(false);
-//        chat.setUndecorated(true);
-//        chat_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //短期聊天记录
         JPanel context = new JPanel();
@@ -42,14 +37,13 @@ public class Chat {
         context.setLayout(null);
         chat_frame.add(context);
 
-        JTextPane context_jta = new JTextPane();
-        Document doc = context_jta.getDocument();
-
+        JTextPane context_jtp = new JTextPane();
+        Document doc = context_jtp.getDocument();
         //聊天记录不可编辑
-        context_jta.setEditable(false);
-        context_jta.setOpaque(false);
+        context_jtp.setEditable(false);
+        context_jtp.setOpaque(false);
 
-        JScrollPane context_jsp = new JScrollPane(context_jta);
+        JScrollPane context_jsp = new JScrollPane(context_jtp);
         context_jsp.setOpaque(false);
         context_jsp.getViewport().setOpaque(false);
         context_jsp.setBounds(0, 0, 650, 480);
@@ -79,10 +73,10 @@ public class Chat {
         close.addActionListener(e -> System.exit(0));
         send_context.add(close);
 
-        JTextPane send_context_jta = new JTextPane();
-        send_context_jta.setOpaque(false);
+        JTextPane send_context_jtp = new JTextPane();
+        send_context_jtp.setOpaque(false);
         //回车键发送消息
-        send_context_jta.addKeyListener(new KeyListener() {
+        send_context_jtp.addKeyListener(new KeyListener() {
             String str;
             boolean press_ctrl = false;
             boolean press_enter = false;
@@ -95,18 +89,18 @@ public class Chat {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (!press_enter && e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    if (!send_context_jta.getText().equals("") && !send_context_jta.getText().equals("\n")) {
+                    if (!send_context_jtp.getText().equals("") && !send_context_jtp.getText().equals("\n")) {
                         str = "                                              "
                                 + "                                           "
                                 + time_format.format(new Date()) + "\n"
-                                + send_context_jta.getText() + "\n";
+                                + send_context_jtp.getText() + "\n";
                         try {
                             doc.insertString(doc.getLength(), str, new SimpleAttributeSet());
                         } catch (BadLocationException ef) {
                             ef.printStackTrace();
                         }
                     }
-                    send_context_jta.setText("");
+                    send_context_jtp.setText("");
                     press_enter = true;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
@@ -114,14 +108,14 @@ public class Chat {
                     System.out.println("press");
                 }
                 if (press_ctrl && e.getKeyCode() == KeyEvent.VK_V) {
-                    send_context_jta.setText("====");
+                    send_context_jtp.setText("====");
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
                 if (press_enter && e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    send_context_jta.setText("");
+                    send_context_jtp.setText("");
                     press_enter = false;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
@@ -135,9 +129,11 @@ public class Chat {
         JButton send = new JButton("发  送");
         send.setBounds(570, 112, 79, 30);
 
+
+        //对方的账号为Opposite_account
         send_context.add(send);
 
-        JScrollPane send_context_jsp = new JScrollPane(send_context_jta);
+        JScrollPane send_context_jsp = new JScrollPane(send_context_jtp);
         send_context_jsp.setOpaque(false);
         send_context_jsp.getViewport().setOpaque(false);
         send_context_jsp.setBounds(0, 0, 650, 180);
@@ -146,6 +142,8 @@ public class Chat {
         chat_frame.add(send_context);
         chat_frame.setVisible(true);
 
-        send_context_jta.requestFocus();
+        send_context_jtp.requestFocus();
+
+
     }
 }

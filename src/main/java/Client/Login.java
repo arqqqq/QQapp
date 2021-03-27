@@ -171,7 +171,9 @@ public class Login {
         forget.setFont(font);
         forget.setContentAreaFilled(false);
         forget.setBorderPainted(false);
-        forget.addActionListener(e -> {});
+        forget.addActionListener(e -> {
+            FrameTools.findOutPassFrame();
+        });
         frame.add(forget);
 
         JButton sign_in = new JButton("登        录");
@@ -220,10 +222,23 @@ public class Login {
                     JOptionPane.showConfirmDialog(null,"登陆成功！");
                     //等待接收对面的好友数据
                     String haoyoumsg = ConnectWithServer.waitForHaoYouMsg();
+                    ArrayList<String> haoyou = new ArrayList<>();
+                    String temps = "";
+                    for(int i=0;i<haoyoumsg.length();i++){
+                        char temp = haoyoumsg.charAt(i);
+                        if(temp==','||i==haoyoumsg.length()-1){
+                            haoyou.add(temps);
+                            temps = "";
+                        }else {
+                            temps = temps+temp;
+                        }
+                    }
+                    System.out.println("好友信息:"+haoyou.toString());
                     //解析好友msg
                     System.out.println("好友信息："+haoyoumsg);
                     //根据这个好友信息动态的创建一个一个动态的好友窗格
-
+                    new Clients(haoyou).UI();
+                    frame.dispose();
                     sign_in.setText("登        录");
                     return;//登陆成功!
                 }

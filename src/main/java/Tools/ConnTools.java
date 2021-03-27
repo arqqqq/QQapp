@@ -78,12 +78,18 @@ public class ConnTools {
                         if(pass.equals(rs.getString(2))){
                             if(rs.getInt(6)!=1){
                                 System.out.println("返回"+13);
+                                rs.close();
+                                stml.close();
                                 return 13;
                             }
                             System.out.println("返回"+12);
+                            rs.close();
+                            stml.close();
                             return 12;
                         }
                         System.out.println("返回"+11);
+                        rs.close();
+                        stml.close();
                         return 11;
                     }
                 }
@@ -263,5 +269,77 @@ public class ConnTools {
             }
         }
         return null;
+    }
+
+    /**
+     * 查询账号信息和查询账号和qq号码的关联情况
+     * 1、账号不存在---->20
+     * 2、账号存在但是qq不与其关联---->21
+     * 3、账号存在并且qq号是相关联的---->22
+     * @param account
+     * @param qqnum
+     * @return
+     */
+    public static byte isAccountAndQQnumGuanlian(String account,String qqnum){
+        //获取与数据库的连接
+        Connection conn = connectSQL();
+        try {
+            Statement stml = conn.createStatement();
+            String sql = "select *from account where account="+account+"&& qqnum="+qqnum;
+            ResultSet rs = stml.executeQuery(sql);
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            while (rs.next()){
+                if(account.equals(rs.getString(1))){
+                    if(qqnum.equals(rs.getString(5))){
+                        rs.close();
+                        stml.close();
+                        return 22;
+                    }
+                    rs.close();
+                    stml.close();
+                    return 21;
+                }
+            }
+            rs.close();
+            stml.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+         return 20;
+    }
+
+    /**
+     * 修改密码的方法
+     * @param account
+     * @param pass
+     */
+    public static void changPassByAccount(String account, String pass) {
+        Connection conn = connectSQL();
+        try {
+            String sql = "UPDATE account set password =? where account =?";
+            PreparedStatement stml = conn.prepareStatement(sql);
+            stml.setString(1,pass);
+            stml.setString(2,account);
+            stml.execute();
+            stml.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
     }
 }

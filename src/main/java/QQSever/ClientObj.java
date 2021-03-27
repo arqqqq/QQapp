@@ -5,6 +5,8 @@ import TableClass.Account;
 import Tools.ConnTools;
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static java.lang.System.*;
 
 public class ClientObj extends Thread{
@@ -18,14 +20,17 @@ public class ClientObj extends Thread{
     private DataOutputStream dout;
     private DataInputStream dint;
     private static int Count=0;
-    private CreatSever mysever;
+    private ConcurrentHashMap<String,DataInputStream> dataInGroup;
+    private ConcurrentHashMap<String , DataOutputStream> dataOutGroup;
     private boolean isAlive = true;
 
     /**
      * 构造器
      */
-    public ClientObj(Socket soc,CreatSever mysever){
+    public ClientObj(Socket soc,ConcurrentHashMap<String,DataInputStream> dataInGroup,ConcurrentHashMap<String , DataOutputStream> dataOutGroup){
         super("客户端"+Count++);
+        this.dataInGroup = dataInGroup;
+        this.dataOutGroup = dataOutGroup;
         //获取流的对象
         try {
             OutputStream out = soc.getOutputStream();
@@ -39,7 +44,6 @@ public class ClientObj extends Thread{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.mysever = mysever;
     }
 
     /**
@@ -65,6 +69,7 @@ public class ClientObj extends Thread{
                     byte stage = dint.readByte();
                     switch (stage){
                         case 1: login();
+                        case 2: findOutPassword();
                         case 3: vertifyQQ();
                         case 5:{
                             isAlive = false;
@@ -78,6 +83,33 @@ public class ClientObj extends Thread{
             }
         }
 
+    }
+
+    /**
+     * 找回密码的方法，一共三种情况
+     * 1、账号不存在---->20
+     * 2、账号存在但与qq号码不关联---->21
+     * 3、账号存在并且与qq号码关联---->22
+     */
+    private void findOutPassword() {
+        String account = readStr();
+        String qqnum = readStr();
+        byte stage = ConnTools.isAccountAndQQnumGuanlian(account,qqnum);
+        try {
+            dout.writeByte(stage);
+            boolean isTrue = dint.readBoolean();
+            if(isTrue){
+                //等待接收密码
+                String pass = readStr();
+                //将密码存储入数据库
+                ConnTools.changPassByAccount(account,pass);
+                return;
+            }else {
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -184,6 +216,8 @@ public class ClientObj extends Thread{
         try {
             boolean isTrue = dint.readBoolean();
             if(isTrue){
+                dataInGroup.put(account,dint);
+                dataOutGroup.put(account,dout);
                 setAccount(account);
                 //并设置account的登陆状态为已登录
                 ConnTools.setLoginStage(account,1);

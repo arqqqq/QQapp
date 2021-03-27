@@ -5,6 +5,8 @@ import Tools.SendMsg;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.concurrent.TimeUnit;
 
 public class FrameTools {
@@ -210,5 +212,229 @@ public class FrameTools {
     }
 
 
+    public static void findOutPassFrame(){
+        JFrame frame = new JFrame();
+        frame.setTitle("密码找回");
+        frame.setSize(400,500);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        //添加组件
+        JLayeredPane jlp = new JLayeredPane();
+        ImageIcon icon = new ImageIcon("Photo\\img.png");
+        Image img = icon.getImage().getScaledInstance(400,500,1);
+        JLabel lab = new JLabel(new ImageIcon(img));
+        lab.setBounds(0,0,400,500);
+        JPanel pan = new JPanel();
+        pan.setBounds(0,0,400,500);
+        pan.add(lab);
+        jlp.add(pan,JLayeredPane.DEFAULT_LAYER);
+        //添加组件
+        JLabel lab1 = new JLabel("账号:");
+        JLabel lab2 = new JLabel("绑定qq号:");
+        JLabel lab3 = new JLabel("验证码:");
+        JLabel lab4 = new JLabel("新密码:");
+        JTextField accfil = new JTextField();
+        accfil.setBackground(new Color(255,245,238));
+        accfil.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                String t = accfil.getText();
+                if(t.length()>4) e.consume();
+            }
+        });
+        JTextField qqfil = new JTextField();
+        qqfil.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                String t = qqfil.getText();
+                if(t.length()>11) e.consume();
+            }
+        });
+        qqfil.setBackground(new Color(255,245,238));
+        JTextField vertifyfil = new JTextField();
+        vertifyfil.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                String t = vertifyfil.getText();
+                if(t.length()>3) e.consume();
+            }
+        });
+        vertifyfil.setBackground(new Color(255,245,238));
+        JPasswordField passfil = new JPasswordField();
+        passfil.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                String t = new String(passfil.getPassword());
+                if(t.length()>29) e.consume();
+            }
+        });
+        passfil.setBackground(new Color(255,245,238));
+        lab1.setBounds(50,50,100,30);
+        lab2.setBounds(50,110,100,30);
+        lab3.setBounds(50,170,100,30);
+        lab4.setBounds(50,230,100,30);
+        accfil.setBounds(150,50,200,30);
+        qqfil.setBounds(150,110,200,30);
+        vertifyfil.setBounds(150,170,200,30);
+        passfil.setBounds(150,230,200,30);
+        jlp.add(lab1,JLayeredPane.DRAG_LAYER);
+        jlp.add(lab2,JLayeredPane.DRAG_LAYER);
+        jlp.add(lab3,JLayeredPane.DRAG_LAYER);
+        jlp.add(lab4,JLayeredPane.DRAG_LAYER);
+        jlp.add(accfil,JLayeredPane.DRAG_LAYER);
+        jlp.add(qqfil,JLayeredPane.DRAG_LAYER);
+        jlp.add(vertifyfil,JLayeredPane.DRAG_LAYER);
+        jlp.add(passfil,JLayeredPane.DRAG_LAYER);
+
+        //和显示标签
+        JLabel showlab = new JLabel("请输入验证码");
+        showlab.setHorizontalAlignment(JLabel.CENTER);
+        showlab.setBounds(50,290,300,50);
+        jlp.add(showlab,JLayeredPane.DRAG_LAYER);
+        //添加按钮
+        JButton btn1 = new JButton("发送");
+        JButton btn2 = new JButton("修改密码");
+        btn1.setBounds(50,370,100,30);
+        btn2.setBounds(250,370,100,30);
+        jlp.add(btn1,JLayeredPane.DRAG_LAYER);
+        jlp.add(btn2,JLayeredPane.DRAG_LAYER);
+        //添加监听器
+        final String[] vetcode = {null};
+        final Thread[] showThr = {null};
+        final boolean[] isSend = {false};
+        btn1.addActionListener(e->{
+            /**
+             * 实现步骤
+             * 1、首先对读取账号款和qq账号框的内容
+             * 2、对账号和qq的合法性进行一个校验
+             * 3、将信息发送给服务器端，验证账号的存在性和关联性
+             * 4、将信息反馈回来
+             * 5、客户端根据信息处理数据，与使用客户进行交互，通过gui
+              */
+             String account = accfil.getText();
+             String qqnum = qqfil.getText();
+             if(account.length()!=5){
+                 JOptionPane.showConfirmDialog(null,"账号必须位五位的数字");
+                 return;
+             }
+             if(qqnum.length()<8){
+                 JOptionPane.showConfirmDialog(null,"qq号码必须在8位到11位之间");
+                 return;
+             }
+             for(int i=0;i<account.length();i++){
+                 if(account.charAt(i)-'0'<0||account.charAt(i)-'0'>9){
+                     JOptionPane.showConfirmDialog(null,"您输入的账号不合法");
+                     accfil.setText("");
+                     return;
+                 }
+             }
+             for(int i=0;i<qqnum.length();i++){
+                 if(qqnum.charAt(i)-'0'<0||qqnum.charAt(i)-'0'>9){
+                     JOptionPane.showConfirmDialog(null,"您输入的qq账号不合法");
+                     qqfil.setText("");
+                     return;
+                 }
+             }
+            if(!isSend[0]){
+                //经历完筛选之后，将信息发送给服务器
+                byte stage = ConnectWithServer.sendAccountAndQQnumMsg(account,qqnum);
+                switch (stage){
+                    case 20:{
+                        JOptionPane.showConfirmDialog(null,"您输入的账号不存在");
+                        ConnectWithServer.sendBool(false);
+                        ConnectWithServer.sendExitMsg();
+                        ConnectWithServer.setSocketToNull();
+                        return;
+                    }
+                    case 21:{
+                        JOptionPane.showConfirmDialog(null,"请输入正确的关联qq号");
+                        ConnectWithServer.sendBool(false);
+                        ConnectWithServer.sendExitMsg();
+                        ConnectWithServer.setSocketToNull();
+                        return;
+                    }
+                    case 22:{
+                        showlab.setText("正在发送验证码.....");
+                        vetcode[0] = SendMsg.sendMessages(qqnum);
+                        showlab.setText("验证码发送成功！");
+                        showThr[0] = new Thread(()->{
+                            isSend[0] = true;
+                            int i=0;
+                            while (i<120){
+                                showlab.setText((120-i)+"秒后重试");
+                                try {
+                                    TimeUnit.SECONDS.sleep(1);
+                                } catch (InterruptedException interruptedException) {
+                                    interruptedException.printStackTrace();
+                                    break;
+                                }
+                                i++;
+                            }
+                            if(i==119){
+                                ConnectWithServer.sendBool(false);
+                                ConnectWithServer.sendExitMsg();
+                                ConnectWithServer.setSocketToNull();
+                                isSend[0] = false;
+                                vetcode[0] = null;
+                            }
+
+                        });
+                        showThr[0].start();
+                        return;
+                    }
+                    case 23:{
+                        JOptionPane.showConfirmDialog(null,"连接超时");
+                        return;
+                    }
+                }
+            }else {
+                JOptionPane.showConfirmDialog(null,"验证码已发送，请稍后重试！");
+            }
+
+        });
+        //添加监听器
+        btn2.addActionListener(e->{
+            //首先判断验证码是否正确，然后在获取密码发送密码
+            String code = vertifyfil.getText();
+            if(code.length()!=4){
+                JOptionPane.showConfirmDialog(null,"验证码格式错误");
+                return;
+            }
+            if(vetcode[0]==null){
+                JOptionPane.showConfirmDialog(null,"请发送验证码或验证码已失效");
+                return;
+            }
+            if(vetcode[0].equals(code)){
+                //验证码正确，修改后的密码，并提示修改密码成功！
+                ConnectWithServer.sendBool(true);
+                ConnectWithServer.sendStr(new String(passfil.getPassword()));
+                ConnectWithServer.sendExitMsg();
+                ConnectWithServer.setSocketToNull();
+                showlab.setText("修改成功，界面将于两秒后退出");
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+                frame.dispose();
+            }else {
+                JOptionPane.showConfirmDialog(null,"验证码错误");
+                return;
+            }
+        });
+
+        frame.setLayeredPane(jlp);
+        frame.setVisible(true);
+    }
+
+
+    public static void main(String[] args){
+        FrameTools.findOutPassFrame();
+    }
 
 }
