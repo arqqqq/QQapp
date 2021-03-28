@@ -68,12 +68,25 @@ public class ClientObj extends Thread{
                 try {
                     byte stage = dint.readByte();
                     switch (stage){
-                        case 1: login();
-                        case 2: findOutPassword();
-                        case 3: vertifyQQ();
-                        case 4: sendMsg();
+                        case 1: {
+                            login();
+                            break;
+                        }
+                        case 2: {
+                            findOutPassword();
+                            break;
+                        }
+                        case 3: {
+                            vertifyQQ();
+                            break;
+                        }
+                        case 4:{
+                            sendMsg();
+                            break;
+                        }
                         case 5:{
                             isAlive = false;
+                            break;
                         }
                     }
                 } catch (IOException e) {
@@ -88,17 +101,16 @@ public class ClientObj extends Thread{
 
     private void sendMsg() {
         String desAccount = readStr();
+        out.println("·¢ËÍ¸ø£º"+desAccount);
         String msg = readStr();
         DataOutputStream dou = dataOutGroup.get(desAccount);
         if(dou!=null){
             try {
                 dou.writeByte(4);
-                int len = getAccount().length();
-                int len2 = msg.length();
-                dou.writeInt(len);
-                dou.write(getAccount().getBytes());
-                dou.writeInt(len2);
-                dou.write(msg.getBytes());
+                dou.writeUTF(getAccount());
+                dou.writeByte(255);
+                dou.writeUTF(msg);
+                dou.writeByte(255);
                 return;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -191,10 +203,8 @@ public class ClientObj extends Thread{
      */
     private String readStr(){
         try {
-            int len = dint.readInt();
-            byte byt[] = new byte[len];
-            dint.read(byt);
-            String msg = new String(byt);
+            String msg = dint.readUTF();
+            byte a = dint.readByte();
             return msg;
         }catch (IOException e){
             e.printStackTrace();
@@ -209,10 +219,8 @@ public class ClientObj extends Thread{
     private void writeStr(String str){
         if(str==null||str.length()==0) return;
         try {
-            int len = str.length();
-            dout.writeInt(len);
-            byte[] byt = str.getBytes();
-            dout.write(byt);
+            dout.writeUTF(str);
+            dout.writeByte(255);
         }catch (IOException e){
             e.printStackTrace();
         }
