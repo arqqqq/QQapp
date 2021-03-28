@@ -217,14 +217,10 @@ public class Clients {
                     System.out.println("成功！");
                     if(stage==(byte) 4){
                         //接收字符串信息
-                        int len = din.readInt();
-                        byte byt[] = new byte[len];
-                        din.read(byt);
-                        String sender = new String(byt);
-                        int len1 = din.readInt();
-                        byte byt1[] = new byte[len1];
-                        din.read(byt1);
-                        String msg = new String(byt1);
+
+                        String sender = din.readUTF();
+                        int end=din.readByte();
+                        String msg = din.readUTF();
                         Chat cha = chatCli.get(sender);
                         if(chatCli.get(sender)!=null){
                             chatCli.get(sender).showMsg(msg);
