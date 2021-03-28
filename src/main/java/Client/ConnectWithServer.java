@@ -20,7 +20,11 @@ public class ConnectWithServer{
 
 
     public static DataInputStream getInPutStream(){
-        return in;
+        if(in==null){
+            return null;
+        }else {
+            return in;
+        }
     }
     /**
      * 获取与服务器的连接

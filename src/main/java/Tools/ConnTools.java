@@ -216,7 +216,7 @@ public class ConnTools {
     public static void addAccount(Account acc){
         try {
             Connection conn = connectSQL();
-            String sql = "insert into account values(?,?,?,?,?,?)";
+            String sql = "insert into account values(?,?,?,?,?,?,?)";
             PreparedStatement prml = conn.prepareStatement(sql);
             prml.setString(1,acc.getAccount());
             prml.setString(2,acc.getPassword());
@@ -224,6 +224,7 @@ public class ConnTools {
             prml.setString(4,acc.getPriname());
             prml.setString(5,acc.getQqnum());
             prml.setInt(6,0);
+            prml.setString(7,"null");
             prml.execute();
             prml.close();
             conn.close();

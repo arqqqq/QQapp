@@ -50,11 +50,11 @@ public class Clients {
                 if (!str.equals("我的好友") && !str.equals("黑名单") && !str.equals("陌生人") && e.getClickCount() == 2) {
                     //点击两次好友，弹出对话框
                     PeopleNode treeNode = (PeopleNode) node;
-                    Chat cha = new Chat(treeNode.getAccount());
-                    chatCli.put(treeNode.getAccount(),cha);
+                    String temp = treeNode.getAccount();
+                    Chat cha = new Chat(temp);
+                    System.out.println(temp);
+                    chatCli.put(temp,cha);
                     cha.Open();
-                    System.out.println(treeNode.getAccount());
-
                 }
             }
         });
@@ -210,29 +210,32 @@ public class Clients {
 
         new Thread(()->{
             DataInputStream din = ConnectWithServer.getInPutStream();
+            System.out.println("获取到这个输入流了"+din);
             while (true){
                 try {
                     byte stage = din.readByte();
-                    if(stage==4){
+                    System.out.println("成功！");
+                    if(stage==(byte) 4){
                         //接收字符串信息
                         int len = din.readInt();
                         byte byt[] = new byte[len];
+                        din.read(byt);
                         String sender = new String(byt);
                         int len1 = din.readInt();
                         byte byt1[] = new byte[len1];
+                        din.read(byt1);
                         String msg = new String(byt1);
                         Chat cha = chatCli.get(sender);
-                        if(cha!=null){
-                            cha.showMsg(msg);
+                        if(chatCli.get(sender)!=null){
+                            chatCli.get(sender).showMsg(msg);
+                            System.out.println("成功！");
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }).start();
-
-
+        },"接收消息线程").start();
 
     }
 }

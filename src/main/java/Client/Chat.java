@@ -24,8 +24,6 @@ public class Chat {
         this.Opposite_account = Opposite_account;
     }
 
-    final Thread[] thr = {null};
-
 
     public void showMsg(String msg){
         String stl = "                                              "
@@ -34,6 +32,7 @@ public class Chat {
                 + Opposite_account+": "+msg + "\n";
         try {
             doc.insertString(doc.getLength(), stl, new SimpleAttributeSet());
+            System.out.println("Ö´ÐÐ³É¹¦£¡");
         } catch (BadLocationException ef) {
             ef.printStackTrace();
         }
@@ -117,10 +116,10 @@ public class Chat {
                             ef.printStackTrace();
                         }
                     }
-                    send_context_jtp.setText("");
                     ConnectWithServer.sendVertifyMsg((byte) 4);
                     ConnectWithServer.sendStr(Opposite_account);
                     ConnectWithServer.sendStr(send_context_jtp.getText());
+                    send_context_jtp.setText("");
                     press_enter = true;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
