@@ -60,12 +60,10 @@ public class ConnectWithServer{
             DataInputStream  dint = new DataInputStream(soc.getInputStream());
             dout.write(1);
             //发送账号信息
-            int len1 = account.length();
-            dout.writeInt(len1);
-            dout.write(account.getBytes());
-            int len2 = password.length();
-            dout.writeInt(len2);
-            dout.write(password.getBytes());
+            dout.writeUTF(account);
+            dout.writeByte(255);
+            dout.writeUTF(password);
+            dout.writeByte(255);
             //接收服务器反馈
             byte fankui = dint.readByte();
             if(fankui==13){
@@ -95,10 +93,8 @@ public class ConnectWithServer{
             //接收服务器发送过来的好友信息
             try {
                 System.out.println("进来了！");
-                int len = in.readInt();
-                byte[] byt = new byte[len];
-                in.read(byt);
-                String msg = new String(byt);
+                String msg = in.readUTF();
+                byte end = in.readByte();
                 return msg;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -272,12 +268,10 @@ public class ConnectWithServer{
             DataInputStream dint = new DataInputStream(soc.getInputStream());
             DataOutputStream dout = new DataOutputStream(soc.getOutputStream());
             dout.writeByte(2);
-            int len = acc.length();
-            dout.writeInt(len);
-            dout.write(acc.getBytes());
-            int len1 = qq.length();
-            dout.writeInt(len1);
-            dout.write(qq.getBytes());
+            dout.writeUTF(acc);
+            dout.writeByte(255);
+            dout.writeUTF(qq);
+            dout.writeByte(255);
             byte byt = dint.readByte();
             if(byt==22){
                 out = dout;

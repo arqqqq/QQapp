@@ -26,15 +26,19 @@ public class Chat {
 
 
     public void showMsg(String msg){
-        String stl = "                                              "
-                + "                                           "
-                + time_format.format(new Date()) + "\n"
-                + Opposite_account+": "+msg + "\n";
-        try {
-            doc.insertString(doc.getLength(), stl, new SimpleAttributeSet());
-            System.out.println("执行成功！");
-        } catch (BadLocationException ef) {
-            ef.printStackTrace();
+        if(doc!=null){
+            String stl = "                                              "
+                    + "                                           "
+                    + time_format.format(new Date()) + "\n"
+                    + Opposite_account+": "+msg + "\n";
+            try {
+                doc.insertString(doc.getLength(), stl, new SimpleAttributeSet());
+                System.out.println("执行成功！");
+            } catch (BadLocationException ef) {
+                ef.printStackTrace();
+            }
+        }else {
+            System.out.println("this doc is null!");
         }
     }
 

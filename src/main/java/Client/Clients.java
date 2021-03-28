@@ -219,8 +219,9 @@ public class Clients {
                         //接收字符串信息
 
                         String sender = din.readUTF();
-                        int end=din.readByte();
+                        byte end=din.readByte();
                         String msg = din.readUTF();
+                        byte end1 = din.readByte();
                         Chat cha = chatCli.get(sender);
                         if(chatCli.get(sender)!=null){
                             chatCli.get(sender).showMsg(msg);
