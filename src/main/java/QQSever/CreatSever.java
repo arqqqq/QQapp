@@ -5,15 +5,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TransferQueue;
 
 public class CreatSever {
 
     private java.net.ServerSocket sever = null;
-    private LinkedList<ClientObj> cligroup = new LinkedList<>();
     private ConcurrentHashMap<String,DataInputStream> dataInGroup;
     private ConcurrentHashMap<String , DataOutputStream> dataOutGroup;
     public void createSever(){
@@ -40,21 +36,11 @@ public class CreatSever {
                     Socket so = sever.accept();
                     ClientObj cli = new ClientObj(so,dataInGroup,dataOutGroup);
                     cli.start();
-                    cligroup.add(cli);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-    }
-
-    /**
-     * 移除客户段对象
-     * @param cli
-     * @return
-     */
-    public boolean removeCli(ClientObj cli){
-        return cligroup.remove(cli);
     }
 
 
