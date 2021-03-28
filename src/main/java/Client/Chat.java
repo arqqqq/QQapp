@@ -13,9 +13,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Chat {
-    public Document doc;
-    String Opposite_account;
-    SimpleDateFormat time_format;
+    private Document doc;
+    private String Opposite_account;
+    private SimpleDateFormat time_format;
+    private ImageIcon Opposite_Image,Self_Image;
 
     {
         time_format = new SimpleDateFormat(("MM-dd HH:mm:ss"));
@@ -152,8 +153,6 @@ public class Chat {
         JButton send = new JButton("发  送");
         send.setBounds(570, 112, 79, 30);
 
-
-        //对方的账号为Opposite_account
         send_context.add(send);
 
         JScrollPane send_context_jsp = new JScrollPane(send_context_jtp);
@@ -166,7 +165,6 @@ public class Chat {
         chat_frame.setVisible(true);
 
         send_context_jtp.requestFocus();
-
 
     }
 }

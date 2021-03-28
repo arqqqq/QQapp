@@ -27,9 +27,11 @@ public class Clients {
 
     private ArrayList<String> haoyou;
     private ConcurrentHashMap<String,Chat> chatCli;
+    private ConcurrentHashMap<String,String> messageMap;
 
     public Clients(ArrayList<String> haoyou) {
         chatCli = new ConcurrentHashMap<>();
+        messageMap=new ConcurrentHashMap<>();
         this.haoyou = haoyou;
     }
 
@@ -170,7 +172,12 @@ public class Clients {
         String[] item = new String[]{"在线", "离线", "隐身", "请勿打扰"};
         var box = new JComboBox(item);
         box.setBounds(150, 45, 80, 20);
+        box.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
 
+            }
+        });
         panel.add(box);
 
         // 个性签名
@@ -186,7 +193,12 @@ public class Clients {
 
         // 添加好友功能
         JButton jbu = new JButton("添加好友");
+        jbu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
+            }
+        });
         jbu.setBounds(240, 135, 90, 30);
         jbu.setOpaque(false);
         panel.add(jbu);

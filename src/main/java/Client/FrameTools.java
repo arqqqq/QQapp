@@ -1,6 +1,5 @@
 package Client;
 
-import Tools.ConnTools;
 import Tools.SendMsg;
 
 import javax.swing.*;

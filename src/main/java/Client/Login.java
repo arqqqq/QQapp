@@ -1,26 +1,13 @@
 package Client;
 
-
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class Login {
 
     private boolean Can_Drag = false;
-
-
-    /**
-     * 构造器
-     * 初始化connectSever对象
-     * 连接Sever
-     */
-    public Login(){
-
-    }
 
     public static void main(String[] args) {
         Login login = new Login();
@@ -57,7 +44,7 @@ public class Login {
 
         });
 
-        background.addMouseMotionListener(new MouseMotionListener() {
+        background.addMouseMotionListener(new MouseAdapter() {
             int StartX, StartY, EndX, EndY;
 
             @Override
@@ -72,10 +59,6 @@ public class Login {
                 frame.setLocation(frame.getX() + EndX - StartX, frame.getY() + EndY - StartY);
             }
 
-            @Override
-            public void mouseMoved(MouseEvent e) {
-
-            }
         });
 
         JButton minimize = new JButton(new ImageIcon("最小化.png"));
@@ -90,12 +73,14 @@ public class Login {
                 //最小化窗口
                 frame.setExtendedState(1);
             }
+
             @Override
             public void mouseEntered(MouseEvent e) {
                 //使按钮呈现灰色
                 minimize.setContentAreaFilled(true);
                 minimize.setBackground(Color.GRAY);
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 minimize.setContentAreaFilled(false);
@@ -115,12 +100,14 @@ public class Login {
                 ConnectWithServer.sendExitMsg();
                 System.exit(0);
             }
+
             @Override
             public void mouseEntered(MouseEvent e) {
                 //使按钮呈现红色
                 close.setContentAreaFilled(true);
                 close.setBackground(Color.RED);
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 close.setContentAreaFilled(false);
@@ -159,7 +146,8 @@ public class Login {
         sign_up.setFont(font);
         sign_up.setContentAreaFilled(false);
         sign_up.setBorderPainted(false);
-        sign_up.addActionListener(e -> {});
+        sign_up.addActionListener(e -> {
+        });
         frame.add(sign_up);
         sign_up.addActionListener(e -> {
             FrameTools.registFrame();
@@ -183,15 +171,15 @@ public class Login {
             //判断是否合法
             String acc = account.getText();
             String pass = new String(password.getPassword());
-            if(acc.length()!=5){
-                JOptionPane.showConfirmDialog(null,"您输入的账号错误，账号需为五位数字");
+            if (acc.length() != 5) {
+                JOptionPane.showConfirmDialog(null, "您输入的账号错误，账号需为五位数字");
                 account.setText("");
                 password.setText("");
                 return;
             }
-            for(int i=0;i<acc.length();i++){
-                if(acc.charAt(i)-'0'<0||acc.charAt(i)-'0'>9){
-                    JOptionPane.showConfirmDialog(null,"您输入的账号包含非法字符!");
+            for (int i = 0; i < acc.length(); i++) {
+                if (acc.charAt(i) - '0' < 0 || acc.charAt(i) - '0' > 9) {
+                    JOptionPane.showConfirmDialog(null, "您输入的账号包含非法字符!");
                     account.setText("");
                     password.setText("");
                     return;
@@ -200,42 +188,42 @@ public class Login {
             //进行账号验证，
             final byte[] byts = {14};
             final Object obj = new Object();
-            byts[0] = ConnectWithServer.login(acc,pass);
-            System.out.println("接收过来的值为"+byts[0]);
-            switch (byts[0]){
+            byts[0] = ConnectWithServer.login(acc, pass);
+            System.out.println("接收过来的值为" + byts[0]);
+            switch (byts[0]) {
                 case 10: {
-                    JOptionPane.showConfirmDialog(null,"账号不存在");
+                    JOptionPane.showConfirmDialog(null, "账号不存在");
                     sign_in.setText("登        录");
                     return;
                 }
                 case 11: {
-                    JOptionPane.showConfirmDialog(null,"密码错误");
+                    JOptionPane.showConfirmDialog(null, "密码错误");
                     sign_in.setText("登        录");
                     return;
                 }
                 case 12: {
-                    JOptionPane.showConfirmDialog(null,"账号密码正确！");
+                    JOptionPane.showConfirmDialog(null, "账号密码正确！");
                     sign_in.setText("登        录");
                     return;
                 }
                 case 13: {
-                    JOptionPane.showConfirmDialog(null,"登陆成功！");
+                    JOptionPane.showConfirmDialog(null, "登陆成功！");
                     //等待接收对面的好友数据
                     String haoyoumsg = ConnectWithServer.waitForHaoYouMsg();
                     ArrayList<String> haoyou = new ArrayList<>();
                     String temps = "";
-                    for(int i=0;i<haoyoumsg.length();i++){
+                    for (int i = 0; i < haoyoumsg.length(); i++) {
                         char temp = haoyoumsg.charAt(i);
-                        if(temp==','||i==haoyoumsg.length()-1){
+                        if (temp == ',' || i == haoyoumsg.length() - 1) {
                             haoyou.add(temps);
                             temps = "";
-                        }else {
-                            temps = temps+temp;
+                        } else {
+                            temps = temps + temp;
                         }
                     }
-                    System.out.println("好友信息:"+haoyou.toString());
+                    System.out.println("好友信息:" + haoyou.toString());
                     //解析好友msg
-                    System.out.println("好友信息："+haoyoumsg);
+                    System.out.println("好友信息：" + haoyoumsg);
                     //根据这个好友信息动态的创建一个一个动态的好友窗格
                     new Clients(haoyou).UI();
                     frame.dispose();
@@ -243,7 +231,7 @@ public class Login {
                     return;//登陆成功!
                 }
                 case 14: {
-                    JOptionPane.showConfirmDialog(null,"连接超时");
+                    JOptionPane.showConfirmDialog(null, "连接超时");
                     sign_in.setText("登        录");
                     return;
                 }
@@ -251,7 +239,18 @@ public class Login {
 
         });
         frame.add(sign_in);
+        account.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode()==KeyEvent.VK_TAB){
+                    System.out.println("=====");
+                    password.requestFocus();
+                }
+            }
+        });
 
         frame.setVisible(true);
+
+        account.requestFocus();
     }
 }

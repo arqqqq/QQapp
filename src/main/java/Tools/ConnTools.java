@@ -4,8 +4,6 @@ import TableClass.Account;
 
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -110,7 +108,7 @@ public class ConnTools {
     }
 
     /**
-     * 设置账户名为account的账户的等录状态
+     * 设置账户名为account的账户的登录状态
      * @param account
      * @return
      */

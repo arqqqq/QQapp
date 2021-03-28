@@ -32,7 +32,7 @@ public class ConnectWithServer{
      */
     public static Socket getConnect(){
         try {
-            Socket soc = new Socket("localhost",8800);
+            Socket soc = new Socket("192.168.31.70",8800);
             System.out.println("连接成功");
             return soc;
         } catch (IOException e) {
