@@ -183,10 +183,10 @@ public class ConnectWithServer{
             return;
         }else {
             try {
-                int len = msg.length();
+                out.writeUTF(msg);
+                out.writeByte(255);
                 System.out.println("·¢ËÍ³É¹¦£¡");
-                out.writeInt(len);
-                out.write(msg.getBytes());
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
